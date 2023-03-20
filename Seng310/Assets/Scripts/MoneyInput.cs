@@ -6,7 +6,10 @@ using UnityEngine.UI;
 public class MoneyInput : MonoBehaviour
 {
     //Has the num ammount of bills 
-    public static int numBill = 0;                  //MAX 8
+    //public static int numBill = 0;                  //Array where each gives num of bills in each month 
+    public static int[] numBill = new int[12];
+
+    public int month = 1;      //Int to keep track of months from 1-12 where 1 is jan and 12 is dec
 
     //This is a variable that is -1 when a new bill is added and 0-7 when it is a edit
     private int isEdit = -1;
@@ -35,6 +38,8 @@ public class MoneyInput : MonoBehaviour
     //Game object of bill to make them appear or not
     public GameObject[] BillUI;
 
+    public Text[] TitleText; //0 is title, 1 is last month, 2 is next month
+
     //Name text for bills
     public Text[] BillText;
 
@@ -62,17 +67,17 @@ public class MoneyInput : MonoBehaviour
     {
         if(type == "name"){
             //Saving prefs for bills name
-            PlayerPrefs.SetString("billN" + clicked, inputAdd[0].text);
+            PlayerPrefs.SetString("billN" + month + clicked, inputAdd[0].text);
         }else if(type == "date"){
             //Saving prefs for bills date
-            PlayerPrefs.SetString("billD" + clicked, inputAdd[2].text);
+            PlayerPrefs.SetString("billD" + month + clicked, inputAdd[2].text);
         }else if(type == "cost"){
             //Saving prefs for bills cost
             editTemp = PlayerPrefs.GetFloat("billC"+isEdit, 0);
-            PlayerPrefs.SetFloat("billC" + clicked, float.Parse(inputAdd[1].text));
+            PlayerPrefs.SetFloat("billC" + month + clicked, float.Parse(inputAdd[1].text));
         }else if(type == "share"){
             //Saving prefs if bill is shared or not
-            PlayerPrefs.SetString("billS" + clicked, isShare);
+            PlayerPrefs.SetString("billS" + month + clicked, isShare);
         }else{
             print("ERRR, type = " + type);
         }
@@ -83,17 +88,17 @@ public class MoneyInput : MonoBehaviour
     public void AddBill()
     {
         if(isEdit == -1){
-            SetName(numBill);
-            print("BillName" + numBill + " - " + PlayerPrefs.GetString("billN"+numBill, "NO BILL"));
-            print("BillCost" + numBill + " - " + PlayerPrefs.GetFloat("billC"+numBill, 0));
-            print("BillDate" + numBill + " - " + PlayerPrefs.GetString("billD"+numBill, "NO Date"));
-            print("BillSharing" + numBill + " - " + PlayerPrefs.GetString("billS"+numBill, "notSharing"));
+            SetName(numBill[month]);
+            print("BillName" + numBill[month] + "month" + month + " - " + PlayerPrefs.GetString("billN"+ month + numBill[month], "NO BILL"));
+            print("BillCost" + numBill[month] + "month" + month + " - " + PlayerPrefs.GetFloat("billC"+ month + numBill[month], 0));
+            print("BillDate" + numBill[month] + "month" + month + " - " + PlayerPrefs.GetString("billD"+ month + numBill[month], "NO Date"));
+            print("BillSharing" + numBill[month] + "month" + month + " - " + PlayerPrefs.GetString("billS"+ month + numBill[month], "notSharing"));
         }else{
             SetName(isEdit);
-            print("BillName" + isEdit + " - " + PlayerPrefs.GetString("billN"+isEdit, "NO BILL"));
-            print("BillCost" + isEdit + " - " + PlayerPrefs.GetFloat("billC"+isEdit, 0));
-            print("BillDate" + isEdit + " - " + PlayerPrefs.GetString("billD"+isEdit, "NO Date"));
-            print("BillSharing" + isEdit + " - " + PlayerPrefs.GetString("billS"+isEdit, "notSharing"));
+            print("BillName" + isEdit  + "month" + month + " - " + PlayerPrefs.GetString("billN" + month + isEdit, "NO BILL"));
+            print("BillCost" + isEdit + "month" + month + " - " + PlayerPrefs.GetFloat("billC"+ month + isEdit, 0));
+            print("BillDate" + isEdit + "month" + month + " - " + PlayerPrefs.GetString("billD"+ month + isEdit, "NO Date"));
+            print("BillSharing" + isEdit + "month" + month + " - " + PlayerPrefs.GetString("billS"+ month + isEdit, "notSharing"));
         }
     }
 
@@ -127,26 +132,26 @@ public class MoneyInput : MonoBehaviour
         if(!canAdd()){
             return;
         }
-        if(PlayerPrefs.GetString("billS"+numBill, "notSharing") == "notSharing"){
-            PlayerPrefs.SetString("billS" + numBill, "notSharing");
+        if(PlayerPrefs.GetString("billS" + month + numBill, "notSharing") == "notSharing"){
+            PlayerPrefs.SetString("billS" + month + numBill, "notSharing");
         }
 
         
         if(isEdit == -1){
-            if(PlayerPrefs.GetString("billS"+numBill, "notSharing") == "sharing"){
-                MoneyScript.UpdateMoneyShared(PlayerPrefs.GetFloat("billC"+numBill, 0));
+            if(PlayerPrefs.GetString("billS"+ month + numBill[month], "notSharing") == "sharing"){
+                MoneyScript.UpdateMoneyShared(PlayerPrefs.GetFloat("billC"+ month + numBill[month], 0));
             }else{
-                MoneyScript.UpdateMoneyNotShared(PlayerPrefs.GetFloat("billC"+numBill, 0));
+                MoneyScript.UpdateMoneyNotShared(PlayerPrefs.GetFloat("billC"+ month + numBill[month], 0));
             }
 
-            numBill++;
+            numBill[month] =+ 1;
             Add.SetActive(false);
             Home.SetActive(true);
         }else{
-            if(PlayerPrefs.GetString("billS"+isEdit, "notSharing") == "sharing"){
-                MoneyScript.UpdateMoneyShared(PlayerPrefs.GetFloat("billC"+isEdit, 0) - editTemp);
+            if(PlayerPrefs.GetString("billS" + month + isEdit, "notSharing") == "sharing"){
+                MoneyScript.UpdateMoneyShared(PlayerPrefs.GetFloat("billC"+ month + isEdit, 0) - editTemp);
             }else{
-                MoneyScript.UpdateMoneyNotShared(PlayerPrefs.GetFloat("billC"+isEdit, 0) - editTemp);
+                MoneyScript.UpdateMoneyNotShared(PlayerPrefs.GetFloat("billC"+ month + isEdit, 0) - editTemp);
             }
 
             isEdit = -1;
@@ -173,7 +178,7 @@ public class MoneyInput : MonoBehaviour
 
     //Checks anything needed for adding a bill
     public bool canAdd(){
-        if(numBill < 8){
+        if(numBill[month] < 8){
             return true;
         }
         return false;
@@ -187,13 +192,13 @@ public class MoneyInput : MonoBehaviour
         Stats.SetActive(false);
         Add.SetActive(true);
 
-        if(PlayerPrefs.GetString("billS"+isEdit, "notSharing") == "sharing"){
+        if(PlayerPrefs.GetString("billS"+ month + isEdit, "notSharing") == "sharing"){
             wasShared = true;
         }else{
             wasShared2 = false; 
         }
 
-        isShare = PlayerPrefs.GetString("billS"+billNum, "notSharing");
+        isShare = PlayerPrefs.GetString("billS"+ month + billNum, "notSharing");
         SetText();
     }
 
@@ -201,13 +206,13 @@ public class MoneyInput : MonoBehaviour
     private void ReloadText()
     {
         for(int i = 0 ; i < 8 ; i++){
-            if(i < numBill){
+            if(i < numBill[month]){
                 BillUI[i].SetActive(true);
-                BillText[i].text = PlayerPrefs.GetString("billN"+i, "No Name");
-                DateText[i].text = PlayerPrefs.GetString("billD"+i, "No Date");
-                MoneyText[i].text = "$" + PlayerPrefs.GetFloat("billC"+i, 0);
+                BillText[i].text = PlayerPrefs.GetString("billN"+ month + i, "No Name");
+                DateText[i].text = PlayerPrefs.GetString("billD"+ month + i, "No Date");
+                MoneyText[i].text = "$" + PlayerPrefs.GetFloat("billC"+ month + i, 0);
 
-                if((PlayerPrefs.GetString("billS"+i, "ERR") != "notSharing")){
+                if((PlayerPrefs.GetString("billS"+ month + i, "ERR") != "notSharing")){
                     print("true");
                     ShareUI[i].SetActive(true);
                 }else{
@@ -233,15 +238,46 @@ public class MoneyInput : MonoBehaviour
             AddShare.SetActive(false);
         }else{
             print("else");
-            inputAdd[0].text = PlayerPrefs.GetString("billN"+isEdit, "Name");  //Name
-            inputAdd[1].text = PlayerPrefs.GetString("billC"+isEdit, "Price");  //Price
-            inputAdd[2].text = PlayerPrefs.GetString("billD"+isEdit, "MM/DD/YYYY");  //Date
+            inputAdd[0].text = PlayerPrefs.GetString("billN"+ month + isEdit, "Name");  //Name
+            inputAdd[1].text = PlayerPrefs.GetString("billC"+ month + isEdit, "Price");  //Price
+            inputAdd[2].text = PlayerPrefs.GetString("billD"+ month + isEdit, "MM/DD/YYYY");  //Date
 
-            if(PlayerPrefs.GetString("billS"+isEdit, "ERR") == "notSharing"){
+            if(PlayerPrefs.GetString("billS"+ month + isEdit, "ERR") == "notSharing"){
                 AddShare.SetActive(false);
-            }else if(PlayerPrefs.GetString("billS"+isEdit, "ERR") == "sharing"){
+            }else if(PlayerPrefs.GetString("billS"+ month + isEdit, "ERR") == "sharing"){
                 AddShare.SetActive(true);
             }
         }
     }
+
+
+
+    public void MonthClick(bool next)
+    {
+        if(next){
+            if(month < 12){
+                month ++;
+            }
+        }else{
+            if(month > 1){
+                month --;
+            }
+        }
+
+        if(month == 1){
+            TitleText[1].text = "";
+            TitleText[2].text = ">";
+
+        }else if(month == 12){
+            TitleText[1].text = "<";
+            TitleText[2].text = "";
+        }else{
+            TitleText[1].text = "<";
+            TitleText[2].text = ">";
+        }
+
+        TitleText[0].text = month.ToString() + " Bills";
+        ReloadText();
+    }
+
 }
